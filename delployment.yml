@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-openshift
+  namespace: YOUR_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-openshift
+  template:
+    metadata:
+      labels:
+        app: hello-openshift
+    spec:
+      containers:
+      - name: hello-openshift
+        image: openshift/hello-openshift:latest
+        ports:
+        - containerPort: 80
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hello-openshift
+  namespace: YOUR_NAMESPACE
+  labels:
+    app: hello-openshift
+    app.kubernetes.io/component: hello-openshift
+    app.kubernetes.io/instance: hello-openshift
+    app.kubernetes.io/name: hello-openshift
+spec:
+  type: ClusterIP
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: hello-openshift
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: hello-openshift
+  namespace: YOUR_NAMESPACE
+  labels:
+    app: hello-openshift
+    app.kubernetes.io/component: hello-openshift
+    app.kubernetes.io/instance: hello-openshift
+    app.kubernetes.io/name: hello-openshift
+spec:
+  host: hello-openshift-YOUR_NAMESPACE.apps.sandbox-m2.ll9k.p1.openshiftapps.com
+  to:
+    kind: Service
+    name: hello-openshift
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
